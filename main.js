@@ -216,6 +216,50 @@ function eatAndGrow(player, others) {
     });
   }
 
+  function updateLeaderboard() {
+    // Ordena las IA y el jugador por tamaño
+    const sortedPlayers = aiPlayers.concat(jugador).sort((a, b) => b.size - a.size);
+
+    // Obtiene la referencia al elemento del leaderboard
+    const leaderList = document.getElementById('leaderList');
+    leaderList.innerHTML = ''; // Limpia el leaderboard actual
+
+    // Crea los elementos de la lista para el leaderboard
+    sortedPlayers.forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${player.name}: ${player.size}`;
+        leaderList.appendChild(listItem);
+    });
+}
+
+
+
+  function restartGame() {
+    // Restablecer propiedades del jugador
+    jugador.x = canvas.width / 2;
+    jugador.y = canvas.height / 2;
+    jugador.size = 30; // tamaño inicial del jugador
+    jugador.vx = 0;
+    jugador.vy = 0;
+
+    // Restablecer comida y jugadores de IA
+    comidas = [];
+    for (let i = 0; i < 100; i++) {
+        spawnComida(); // Regenerar comida
+    }
+
+    aiPlayers = [];
+    for (let i = 0; i < 10; i++) {
+        aiPlayers.push(new AiPlayer()); // Regenerar jugadores de IA
+    }
+}
+
+function endGame() {
+    let playAgain = confirm("Has perdido. ¿Quieres jugar otra vez?");
+    if (playAgain) {
+        restartGame();
+    }
+}
 
 // Main game loop
 function gameLoop() {
@@ -243,6 +287,10 @@ function gameLoop() {
               jugador.size += aiPlayer.size;
               aiPlayers.splice(index, 1); // Eliminar la bola de la IA
           }
+          else{
+              endGame(); // Fin del juego si el jugador colisiona con una IA más grande
+              return; // Sale del bucle del juego
+          }
       }
   });
 
@@ -250,6 +298,8 @@ function gameLoop() {
   
     // Draw everything
     draw();
+
+    updateLeaderboard();
   
     // Continue the game loop
     requestAnimationFrame(gameLoop);

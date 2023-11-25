@@ -3,6 +3,12 @@
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 2000;
 
+const ACCELERATION = 0.05; // Reducir la aceleración para un movimiento más suave
+const MAX_SPEED = 4; // Velocidad máxima más baja
+const INERTIA_FACTOR = 0.9; // Factor de inercia para suavizar los cambios de dirección
+const DECELERATION_FACTOR = 0.95; // Factor de desaceleración
+const MOVEMENT_SPEED = 0.05;
+
 // Get the canvas element and its context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -19,7 +25,12 @@ let jugador = {
   targetX: canvas.width / 2, // Posición objetivo X
   targetY: canvas.height / 2, // Posición objetivo Y
   moveSpeed: 0.8, // Velocidad de movimiento hacia el objetivo
-  color: 'orange'
+  color: 'orange',
+  vx: 0, // Velocidad en X
+    vy: 0, // Velocidad en Y
+    ax: 0, // Aceleración en X
+    ay: 0, // Aceleración en Y
+
 };
 
 
@@ -46,38 +57,48 @@ function getCameraView(player) {
 }
 
 function moveTowardsTarget(player) {
-  // Mover al jugador hacia el objetivo con interpolación
-  player.x += (player.targetX - player.x) * player.moveSpeed;
-  player.y += (player.targetY - player.y) * player.moveSpeed;
+  // Calcula la dirección hacia el objetivo
+  const dx = player.targetX - player.x;
+  const dy = player.targetY - player.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // Si la distancia es muy pequeña, evita movimientos adicionales
+  if (distance < 0.001) return;
+
+  // Normaliza la dirección
+  const directionX = dx / distance;
+  const directionY = dy / distance;
+
+  // Mueve al jugador hacia el objetivo
+  player.x += directionX * MOVEMENT_SPEED * distance;
+  player.y += directionY * MOVEMENT_SPEED * distance;
 }
 
 
+
 canvas.addEventListener('mousemove', (event) => {
-  jugador.targetX = event.clientX;
-  jugador.targetY = event.clientY;
+  const cameraView = getCameraView(jugador);
+  jugador.targetX = cameraView.x + event.clientX;
+  jugador.targetY = cameraView.y + event.clientY;
 });
 
 // Function to generate comida at random positions
 function spawnComida() {
   let position = {
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    size: comidaSize,
-    color: `hsl(${Math.random() * 360}, 100%, 50%)`
+      x: Math.random() * MAP_WIDTH,
+      y: Math.random() * MAP_HEIGHT,
+      size: comidaSize,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`
   };
   comidas.push(position);
 }
-
 // Generate initial comida on the canvas
 for (let i = 0; i < 100; i++) {
   spawnComida();
 }
 
-// Handle mouse movement
-canvas.addEventListener('mousemove', (event) => {
-  jugador.x = event.clientX;
-  jugador.y = event.clientY;
-});
+
+
 
 // Function to draw the jugador and comida
 function draw() {
@@ -111,6 +132,13 @@ class AiPlayer {
       // Evita jugadores más grandes
       
       // Aquí podrías añadir más lógica, como buscar comida, etc.
+      for (let i = comidas.length - 1; i >= 0; i--) {
+        if (checkCollision(this, comidas[i])) {
+            // Aumentar el tamaño de la IA y eliminar la comida
+            this.size += comidas[i].size;
+            comidas.splice(i, 1);
+        }
+      }
 
       // Mueve el jugador de IA
       this.adjustDirectionBasedOnEnvironment(players, comidas);
@@ -145,6 +173,13 @@ class AiPlayer {
         const magnitude = Math.sqrt(this.direction.x ** 2 + this.direction.y ** 2);
         this.direction.x /= magnitude;
         this.direction.y /= magnitude;
+
+        if (this.x <= 0 || this.x >= MAP_WIDTH) {
+          this.direction.x *= -1;
+          }
+          if (this.y <= 0 || this.y >= MAP_HEIGHT) {
+              this.direction.y *= -1;
+          }
 
         // Aplicar velocidad a la dirección para calcular el cambio de posición
         this.x += this.direction.x * this.velocity;
@@ -196,8 +231,22 @@ function gameLoop() {
   
     // Check for AI eating comida
     aiPlayers.forEach(aiPlayer => {
-      aiPlayer.updateAI(players, foodItems);
-    });
+      aiPlayer.updateAI(players, comidas);
+  });
+    
+    // Verificar colisiones entre el jugador y las bolas de la IA
+    aiPlayers.forEach((aiPlayer, index) => {
+      if (checkCollision(jugador, aiPlayer)) {
+          // Manejar colisión
+          // Por ejemplo, aumentar el tamaño del jugador y eliminar la bola de la IA
+          if (jugador.size >= aiPlayer.size) {
+              jugador.size += aiPlayer.size;
+              aiPlayers.splice(index, 1); // Eliminar la bola de la IA
+          }
+      }
+  });
+
+
   
     // Draw everything
     draw();

@@ -1,7 +1,7 @@
 
 // Paso 1: Definir el Tamaño del Mapa
-const MAP_WIDTH = 2000;
-const MAP_HEIGHT = 2000;
+const MAP_WIDTH = 3000;
+const MAP_HEIGHT = 3000;
 
 const ACCELERATION = 0.05; // Reducir la aceleración para un movimiento más suave
 const MAX_SPEED = 4; // Velocidad máxima más baja
@@ -216,6 +216,12 @@ function eatAndGrow(player, others) {
     });
   }
 
+  // Function to generate a random name
+function generateRandomName() {
+  const namesList = ["CyberDrake", "QuantumWizard", "NeonKnight", "PixelShaman", "DataSorceress", "BinarySage", "CodeMystic", "SiliconSpecter", "DigitalOverlord", "PhantomHacker"];
+  return namesList[Math.floor(Math.random() * namesList.length)];
+}
+
   function updateLeaderboard() {
     // Ordena las IA y el jugador por tamaño
     const sortedPlayers = aiPlayers.concat(jugador).sort((a, b) => b.size - a.size);
@@ -226,10 +232,13 @@ function eatAndGrow(player, others) {
 
     // Crea los elementos de la lista para el leaderboard
     sortedPlayers.forEach(player => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${player.name}: ${player.size}`;
-        leaderList.appendChild(listItem);
-    });
+      if(!player.name || player.name === "player") {
+          player.name = player.isMainPlayer ? "player" : generateRandomName();
+      }
+      const listItem = document.createElement('li');
+      listItem.textContent = `${player.name}: ${player.size}`;
+      leaderList.appendChild(listItem);
+  });
 }
 
 

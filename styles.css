@@ -10,25 +10,49 @@
   position: absolute;
   top: 10px; /* O la posición que prefieras */
   right: 10px; /* O la posición que prefieras */
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid #000;
+  background-color: #f5f5f5; /* A light grey background for the whole leaderboard */
+  border-radius: 10px; /* Rounded corners for a modern look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* A subtle shadow for depth */
+  padding: 20px; /* Some space inside the leaderboard */
+  width: 300px; /* The width of the leaderboard */
+  margin: auto; /* Centering the leaderboard */
   padding: 10px;
   z-index: 100; /* Asegúrate de que el leaderboard esté por encima del canvas */
+  font-family: 'Arial', sans-serif; /* A more neutral, readable font */
+    color: #333; /* Dark grey for readability */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
 }
+
+
 
 #leaderboard h3 {
   margin: 0;
   text-align: center;
+  margin-bottom: 20px; /* Added space below the title for visual separation */
 }
 
-#leaderList {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0 0;
+.leaderboard li:hover {
+  transform: translateY(-2px); /* Slight raise effect on hover */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover for a 3D effect */
 }
 
-#leaderList li {
-  padding: 5px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
+.leaderboard li:before {
+  content: counter(item) ". "; /* Adds a number before each list item */
+  counter-increment: item; /* Increases the number for each list item */
+  font-weight: normal; /* Less emphasis on the number compared to the player name */
+  color: #777; /* A lighter grey for the numbers */
+  margin-right: 5px; /* Space between the number and the player name */
+}
+
+
+.leaderboard li {
+  background-color: #ffffff; /* A white background for each list item */
+  border: 1px solid #ddd; /* A light border for each list item */
+  border-radius: 5px; /* Slightly rounded corners for each list item */
+  margin-bottom: 10px; /* Space between list items */
+  padding: 10px; /* Space inside each list item */
+  list-style-type: none; /* Remove default list item styling */
+  font-weight: bold; /* Make the text a bit bolder */
+  color: #333; /* A dark grey for the text for readability */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth transitions for hover effects */
 }
